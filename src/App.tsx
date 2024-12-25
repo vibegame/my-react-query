@@ -1,78 +1,53 @@
-// const combineMarketsQueries = (results: UseQueryResult<[Error, undefined] | [undefined, Market[]], Error>[]) => {
-//   console.log(results);
-
 import { sleep } from 'radash';
-import { createQuery, useQuery } from './my-react-query/useQuery';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
+import { QueryClient } from './v2/QueryClient';
+import { useQuery } from './v2/useQuery';
 
-//   return {
-//     data: sift(results.flatMap(({ data }) => data?.[1])),
-//     isSettled:
-//       // Settled when all queries are either successful, errored, or not enabled (if query is not enabled, it will not be stale and will not have result)
-//       results.length > 0 && results.every(({ isSuccess, isError, isStale }) => isSuccess || isError || !isStale),
-//   };
-// };
+const queryClient = new QueryClient();
 
-// const marketsQueries = protocols.map((protocolId) => queries.markets({ protocolId }));
+interface GetUsersVariables {
+  filter: string;
+  test: string;
+}
 
-// const useMarket = (protocolId: string, marketId: string) => {
-//   const { market, isSettled } = useQueries({
-//     queries: protocols.map((protocolId) =>
-//       queries.markets(
-//         { protocolId },
-//         {
-//           enabled: protocolId === 'HYPERLIQUID',
-//           select: ([_, data]) => {
-//             if (data) {
-//               return data.find((market) => market.marketId === marketId);
-//             }
-//           },
-//         }
-//       )
-//     ),
-//     combine: (results) => {
-//       return {
-//         isSettled:
-//           results.length > 0 && results.every((result) => result.isSuccess || result.isError || !result.isStale),
-//         market: results.find((result) => result.data)?.data,
-//       };
-//     },
-//   });
+const usersQuery = queryClient.createQuery({
+  name: 'users',
+  fetcher: async ({ filter }: GetUsersVariables) => {
+    await sleep(1000);
 
-//   return { isLoading: !market && !isSettled, market };
-// };
+    if (Math.random() > 0.5) {
+      throw new Error('Failed to fetch users');
+    }
 
-// const useAllMarkets = () => {
-//   return useQueries({
-//     queries: marketsQueries,
-//     combine: (results) => {
-//       console.log(results);
-
-//       return {
-//         data: sift(results.flatMap(({ data }) => data?.[1])),
-//         isSettled:
-//           // Settled when all queries are either successful, errored, or not enabled (if query is not enabled, it will not be stale and will not have result)
-//           results.length > 0 && results.every(({ isSuccess, isError, isStale }) => isSuccess || isError || !isStale),
-//       };
-//     },
-//   });
-// };
-
-const usersQuery = createQuery({
-  queryKey: ['users'],
-  queryFn: async () => {
-    await sleep(3000);
-    return ['Alice', 'Bob', 'Charlie'];
+    return ['Alice', 'Bob', 'Carl'].filter((name) => name.includes(filter));
   },
-  cacheTime: 20000,
-  refetchInterval: 3000,
-  keepPreviousData: false,
+  clearTime: 1000,
 });
 
 const Child1 = memo(function Child1() {
-  const { data, isFetching, refetch, isPending, error, isFetched } = useQuery(usersQuery);
+  const [disabled, setDisabled] = useState(false);
 
-  console.log('Child1', { data, error, isFetching, isPending, isFetched });
+  const { data, error, isSuccess, isError, refetch } = useQuery({
+    query: usersQuery,
+    variables: disabled
+      ? undefined
+      : {
+          test: 'test',
+          filter: 'a',
+        },
+    select(data) {
+      return data.map((name) => name.toUpperCase());
+    },
+    refetchOnMount: false,
+  });
+
+  // useEffect(() => {
+  //   window.setTimeout(() => {
+  //     setDisabled(true);
+  //   }, 5000);
+  // }, []);
+
+  console.log('Child1', { data, error, isSuccess, isError });
 
   return (
     <div>
@@ -82,30 +57,36 @@ const Child1 = memo(function Child1() {
 });
 
 const Child2 = memo(function Child2() {
-  const { data, isFetching, refetch, error, isPending, isFetched } = useQuery(usersQuery);
+  const { data, error, isSuccess, isError } = useQuery({
+    query: usersQuery,
+    variables: {
+      filter: 'a',
+      test: 'test',
+    },
+    refetchOnMount: false,
+  });
 
-  console.log('Child2', { data, error, isFetching, isPending, isFetched });
+  console.log('Child2', { data, error, isSuccess, isError });
 
   return (
     <div>
-      <button onClick={refetch}>Refetch 2</button>
+      <button onClick={() => {}}>Refetch 2</button>
     </div>
   );
 });
 
 function App() {
   const [renderChild2, setRenderChild2] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setRenderChild2(true);
-    }, 4000);
-  }, []);
+  const [disabled, setDisabled] = useState(false);
 
   return (
     <div>
-      <Child1 />
-      {renderChild2 && <Child2 />}
+      {!disabled && (
+        <>
+          <Child1 />
+          <Child2 />
+        </>
+      )}
     </div>
   );
 }

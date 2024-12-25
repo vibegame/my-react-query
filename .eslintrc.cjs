@@ -10,6 +10,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
     'unused-imports/no-unused-imports': 'warn',
     '@typescript-eslint/no-explicit-any': 'off',
+
     'unused-imports/no-unused-vars': [
       'warn',
       {
