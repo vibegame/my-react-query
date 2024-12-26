@@ -1,5 +1,5 @@
 import { sleep } from 'radash';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { QueryClient } from './v2/QueryClient';
 import { useQuery } from './v2/useQuery';
 
@@ -27,7 +27,7 @@ const usersQuery = queryClient.createQuery({
 const Child1 = memo(function Child1() {
   const [disabled, setDisabled] = useState(false);
 
-  const { data, error, isSuccess, isError, refetch } = useQuery({
+  const { data, error, isSuccess, isError } = useQuery({
     query: usersQuery,
     variables: disabled
       ? undefined
@@ -41,17 +41,17 @@ const Child1 = memo(function Child1() {
     refetchOnMount: false,
   });
 
-  // useEffect(() => {
-  //   window.setTimeout(() => {
-  //     setDisabled(true);
-  //   }, 5000);
-  // }, []);
+  useEffect(() => {
+    window.setTimeout(() => {
+      setDisabled(true);
+    }, 5000);
+  }, []);
 
   console.log('Child1', { data, error, isSuccess, isError });
 
   return (
     <div>
-      <button onClick={refetch}>Refetch 1</button>
+      <button>Refetch 1</button>
     </div>
   );
 });

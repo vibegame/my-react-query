@@ -35,11 +35,11 @@ export type QueryCacheState<D, V extends object, E = Error> = {
     }
 );
 
-interface QueryCacheConstructorProps<D extends NotUndefinedValue, V extends object> {
-  variables: V;
+interface QueryCacheConstructorProps<TData extends NotUndefinedValue, TVariables extends object> {
+  variables: TVariables;
   clearTime: number;
   onClear: () => void;
-  fetcher: (variables: V) => Promise<D>;
+  fetcher: (variables: TVariables) => Promise<TData>;
 }
 
 export class QueryCache<TData extends NotUndefinedValue, TVariables extends object, TError = Error> {

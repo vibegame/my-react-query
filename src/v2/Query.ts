@@ -9,7 +9,7 @@ export interface QueryConstructorProps<D, V extends object> {
 
 const DEFAULT_CLEAR_TIME = 300000; // 5 minutes
 
-export class Query<TData extends NotUndefinedValue, TVariables extends object, TError = Error> {
+export class Query<TVariables extends object, TData extends NotUndefinedValue, TError = Error> {
   readonly name: QueryName;
   readonly fetcher: (variables: TVariables) => Promise<TData>;
   readonly clearTime: number;

@@ -8,8 +8,10 @@ export class QueryClient {
     return this.queries.get(queryName);
   }
 
-  createQuery<D extends NotUndefinedValue, V extends object>(props: QueryConstructorProps<D, V>) {
-    const query = new Query<D, V>(props);
+  createQuery<TData extends NotUndefinedValue, TVariables extends object>(
+    props: QueryConstructorProps<TData, TVariables>
+  ) {
+    const query = new Query<TVariables, TData>(props);
     this.queries.set(props.name, query);
 
     return query;
